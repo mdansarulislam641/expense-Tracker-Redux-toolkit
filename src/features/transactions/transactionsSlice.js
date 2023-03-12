@@ -6,7 +6,8 @@ const initialState = {
     isLoading: false,
     transactions: [],
     isError: false,
-    error: ''
+    error: '',
+    editTransaction : {}
 };
 
 // get transaction thunk
@@ -38,6 +39,14 @@ export const removeTransaction = createAsyncThunk('transactions/removeTransactio
 const transactionSlice = createSlice({
     name: 'transactions',
     initialState,
+    reducers:{
+        activeEdit : (state, action) =>{
+            state.editTransaction = action.payload
+        },
+        removeEdit : (state) =>{
+            state.editTransaction = {}
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchTransaction.pending, (state) => {
@@ -66,7 +75,7 @@ const transactionSlice = createSlice({
                 state.isError = false;
                 state.error = '';
             })
-            .addCase(fetchTransaction.rejected, (state, action) => {
+            .addCase(postTransaction.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.error = action.error?.message
@@ -79,14 +88,13 @@ const transactionSlice = createSlice({
             })
             .addCase(changeTransaction.fulfilled, (state, action) => {
                 state.isLoading = false;
-                const index = state.transactions.findIndex(t =>{
-                    t.id === action.payload.id
-                })
+                const index = state.transactions.findIndex(t =>t.id === action.payload.id
+                )
                 state.transactions[index] = action.payload ;
                 state.isError = false;
                 state.error = '';
             })
-            .addCase(fetchTransaction.rejected, (state, action) => {
+            .addCase(changeTransaction.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.error = action.error?.message
@@ -98,13 +106,12 @@ const transactionSlice = createSlice({
             })
             .addCase(removeTransaction.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.transactions = state.transactions.filter(t => {
-                    t.id !== action.payload
-                }) ;
+                state.transactions = state.transactions.filter(t => t.id !== action.meta.arg
+                ) ;
                 state.isError = false;
                 state.error = '';
             })
-            .addCase(fetchTransaction.rejected, (state, action) => {
+            .addCase(removeTransaction.rejected, (state, action) => {
                 state.isLoading = false;
                 state.isError = true;
                 state.error = action.error?.message
@@ -114,3 +121,4 @@ const transactionSlice = createSlice({
 });
 
 export default transactionSlice.reducer ; 
+export const {activeEdit, removeEdit} = transactionSlice.actions;
